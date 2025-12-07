@@ -1,0 +1,98 @@
+/*
+MEASUREMENTS
+
+- Outer Diameter = 17.0mm
+- Top Inset Diameter = 12.6mm
+- Outer Ridge Height = 9mm
+- Outer Ridge Depth = 0.2mm
+- Indicator Width = 1.4mm
+- Inner Cup Depth = 4.5mm
+- Inner Cup Diameter = 5.9mm
+    -> Peg Diameter = 5.8mm
+- Diameter of Peg at cutout = 4.25mm
+
+I didn't measure the chamfer depth lol
+*/
+
+$fs = 0.7;
+$fa = 1;
+
+KNOB_HEIGHT = 20;
+OUTER_DIAMETER = 17.0;
+TOP_INSET_DIAMETER = 12.6;
+TOP_INSET_DEPTH = 0.3;
+
+OUTER_RIDGE_HEIGHT = 9;
+OUTER_RIDGE_DEPTH = 0.8;
+OUTER_RIDGE_WIDTH = 3;
+OUTER_RIDGE_CHAMFER = 0.8;
+OUTER_RIDGE_COUNT = 11;
+
+INDICATOR_WIDTH = 1.6;
+INNER_CUP_DEPTH = 4.5;
+INNER_CUP_DIAMETER = 5.9;
+DIAMETER_OF_PEG_AT_CUTOUT = 4.25;
+
+WALL_THICKNESS = 1;
+
+BENT_PEG_ROTATION = [
+  -1.3967,
+  8.14943,
+  -0.198028,
+];
+
+include <BOSL2/std.scad>;
+
+ridgeInsetAngle = atan(OUTER_RIDGE_DEPTH / OUTER_RIDGE_HEIGHT);
+ridgeAngleStep = 360 / OUTER_RIDGE_COUNT;
+
+difference() {
+  union() {
+    difference() {
+      // Outer Body
+      cyl(d=OUTER_DIAMETER, h=KNOB_HEIGHT, chamfer2=1, anchor=BOTTOM);
+      // Top Inset
+      up(KNOB_HEIGHT - TOP_INSET_DEPTH)
+        cylinder(d=TOP_INSET_DIAMETER, h=KNOB_HEIGHT, anchor=BOTTOM);
+      // Outer Ridges
+      for (i = [0:1:OUTER_RIDGE_COUNT]) {
+        rotate([0, 0, ridgeAngleStep * i])
+          fwd(OUTER_DIAMETER / 2)
+            up(KNOB_HEIGHT - OUTER_RIDGE_HEIGHT)
+              xrot(-ridgeInsetAngle)
+                cuboid(
+                  size=[
+                    OUTER_RIDGE_WIDTH,
+                    4 * OUTER_RIDGE_WIDTH,
+                    KNOB_HEIGHT,
+                  ], anchor=BOTTOM + BACK,
+                  chamfer=OUTER_RIDGE_CHAMFER,
+                  edges="Z"
+                );
+      }
+    }
+
+    // Indicator
+    cylinder(d=INDICATOR_WIDTH, h=KNOB_HEIGHT + TOP_INSET_DEPTH * 2);
+    cuboid(
+      size=[
+        INDICATOR_WIDTH,
+        (OUTER_DIAMETER + INDICATOR_WIDTH) / 2,
+        KNOB_HEIGHT + TOP_INSET_DEPTH * 2,
+      ], anchor=BOTTOM + BACK,
+      chamfer=INDICATOR_WIDTH,
+      edges=TOP + FWD
+    );
+  }
+  // Inner Cup
+  down(1)
+    cyl(d=(OUTER_DIAMETER - WALL_THICKNESS * 2), h=(INNER_CUP_DEPTH + 1), anchor=BOTTOM);
+
+  // Peg Hole
+  rotate(BENT_PEG_ROTATION)
+    difference() {
+      cylinder(d=INNER_CUP_DIAMETER, h=KNOB_HEIGHT - TOP_INSET_DEPTH * 2, anchor=BOTTOM);
+      back(DIAMETER_OF_PEG_AT_CUTOUT - INNER_CUP_DIAMETER / 2)
+        cube(2 * KNOB_HEIGHT, anchor=BOTTOM + FRONT);
+    }
+}
