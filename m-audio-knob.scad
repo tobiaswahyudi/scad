@@ -38,8 +38,8 @@ INDICATOR_HEIGHT = 0.6;
 INDICATOR_BOTTOM_CHAMFER = 1;
 
 INNER_CUP_DEPTH = 4.6;
-INNER_CUP_DIAMETER = 6.2;
-DIAMETER_OF_PEG_AT_CUTOUT = 4.4;
+INNER_CUP_DIAMETER = 6.4;
+DIAMETER_OF_PEG_AT_CUTOUT = 4.7;
 
 
 PEGHOLE_DEPTH = 15.3;
@@ -47,9 +47,9 @@ PEGHOLE_DEPTH = 15.3;
 WALL_THICKNESS = 1;
 
 BENT_PEG_ROTATION = [
-  -1.3967,
-  8.14943,
-  -0.198028,
+  1.3967,
+  -8.14943,
+  0.198028,
 ];
 
 include <BOSL2/std.scad>;
@@ -58,7 +58,7 @@ ridgeInsetAngle = atan(OUTER_RIDGE_DEPTH / OUTER_RIDGE_HEIGHT);
 ridgeAngleStep = 360 / OUTER_RIDGE_COUNT;
 
 difference() {
-  union() {
+    union() {
     difference() {
       // Outer Body
       cyl(d=OUTER_DIAMETER_TOP, h=KNOB_HEIGHT, chamfer2=1, anchor=BOTTOM);
@@ -111,12 +111,72 @@ difference() {
   // Inner Cup
   down(1)
     cyl(d=(OUTER_DIAMETER_TOP - WALL_THICKNESS * 2), h=(INNER_CUP_DEPTH + 1), anchor=BOTTOM);
-
+   /*
+   up(1)
+    cyl(d=10, h=(INNER_CUP_DEPTH * 0.8), anchor=BOTTOM);
+    */
   // Peg Hole
+  left(.75)
+  back(0.25)
   rotate(BENT_PEG_ROTATION)
+  rotate([-7, 0, 0])
     difference() {
       cylinder(d=INNER_CUP_DIAMETER, h=PEGHOLE_DEPTH, anchor=BOTTOM);
       back(DIAMETER_OF_PEG_AT_CUTOUT - INNER_CUP_DIAMETER / 2)
         cube(2 * KNOB_HEIGHT, anchor=BOTTOM + FRONT);
     }
 }
+
+/*
+rotate([-1, -2, 0,])
+union() {
+    difference() {
+      // Outer Body
+      cyl(d=OUTER_DIAMETER_TOP, h=KNOB_HEIGHT, chamfer2=1, anchor=BOTTOM);
+      // Top Inset
+      up(KNOB_HEIGHT - TOP_INSET_DEPTH)
+        cylinder(d=TOP_INSET_DIAMETER, h=KNOB_HEIGHT, anchor=BOTTOM);
+      // Outer Ridges
+      for (i = [0:1:OUTER_RIDGE_COUNT]) {
+        rotate([0, 0, ridgeAngleStep * i])
+          fwd(OUTER_DIAMETER_TOP / 2 - OUTER_RIDGE_DEPTH)
+            // up(KNOB_HEIGHT - OUTER_RIDGE_HEIGHT)
+            //   xrot(-ridgeInsetAngle)
+                cuboid(
+                  size=[
+                    OUTER_RIDGE_WIDTH,
+                    4 * OUTER_RIDGE_WIDTH,
+                    KNOB_HEIGHT,
+                  ], anchor=BOTTOM + BACK,
+                  chamfer=OUTER_RIDGE_CHAMFER,
+                  edges="Z"
+                );
+      }
+    }
+
+    // Taper
+    cyl(d1=OUTER_DIAMETER_BOTTOM, d2=OUTER_DIAMETER_TOP - OUTER_RIDGE_DEPTH * 2, h=KNOB_HEIGHT - TAPER_START_HEIGHT, anchor=BOTTOM);
+
+    // Indicator
+    cylinder(d=INDICATOR_WIDTH, h=KNOB_HEIGHT - TOP_INSET_DEPTH + INDICATOR_HEIGHT);
+    up(INDICATOR_BOTTOM_CHAMFER * 2)
+    cuboid(
+      size=[
+        INDICATOR_WIDTH,
+        OUTER_DIAMETER_TOP / 2 + INDICATOR_HEIGHT,
+        KNOB_HEIGHT - TOP_INSET_DEPTH + INDICATOR_HEIGHT - INDICATOR_BOTTOM_CHAMFER * 2,
+      ], anchor=BOTTOM + BACK,
+      chamfer=INDICATOR_HEIGHT,
+      edges=TOP + FWD
+    );
+    cuboid(
+      size=[
+        INDICATOR_WIDTH,
+        OUTER_DIAMETER_TOP / 2 + INDICATOR_HEIGHT,
+        INDICATOR_BOTTOM_CHAMFER * 2,
+      ], anchor=BOTTOM + BACK,
+      chamfer=INDICATOR_BOTTOM_CHAMFER,
+      edges=BOTTOM + FWD
+    );
+  }
+  */
