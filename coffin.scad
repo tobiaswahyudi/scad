@@ -16,7 +16,7 @@ COFFIN_LENGTH = 120;
 
 COFFIN_HEIGHT = 35;
 
-WALL_THICKNESS = 3;
+WALL_THICKNESS = 2;
 
 MAGNET_DIAMETER = 5.8;
 MAGNET_HEIGHT = 2.55;
@@ -41,9 +41,14 @@ LID_INSET_BORDER = 3;
 LID_INSET_DEPTH = 1;
 
 PENTAGRAM_DIAMETER = 22;
-PENTAGRAM_HEIGHT = 1;
+PENTAGRAM_HEIGHT = 0.5;
 PENTAGRAM_THICKNESS = 1;
 PENTAGRAM_MIDDLE_OFFSET = 2;
+
+WALL_DECO_OFFSET = 4;
+
+WALL_DECO_HEIGHT = 0.5;
+WALL_DECO_WIDTH = 4;
 
 module CoffinShape(
   bottomWidth = COFFIN_BOTTOM_WIDTH,
@@ -77,6 +82,48 @@ by = WALL_THICKNESS + BOTTOM_PILLAR_OFFSET[1];
 
 tx = COFFIN_TOP_WIDTH / 2 - WALL_THICKNESS - TOP_PILLAR_OFFSET[0];
 ty = COFFIN_LENGTH - WALL_THICKNESS - TOP_PILLAR_OFFSET[1];
+
+BOTTOM_WALL_XC = (COFFIN_MIDDLE_WIDTH - COFFIN_BOTTOM_WIDTH) / 2;
+BOTTOM_WALL_YC = COFFIN_MIDDLE_LENGTH;
+TOP_WALL_XC = (COFFIN_MIDDLE_WIDTH - COFFIN_TOP_WIDTH) / 2;
+TOP_WALL_YC = COFFIN_LENGTH - COFFIN_MIDDLE_LENGTH;
+
+BOTTOM_WALL_LENGTH = sqrt(BOTTOM_WALL_XC * BOTTOM_WALL_XC + BOTTOM_WALL_YC * BOTTOM_WALL_YC);
+TOP_WALL_LENGTH = sqrt(TOP_WALL_XC * TOP_WALL_XC + TOP_WALL_YC * TOP_WALL_YC);
+
+BOTTOM_WALL_ANGLE = atan2(BOTTOM_WALL_YC, BOTTOM_WALL_XC);
+TOP_WALL_ANGLE = atan2(TOP_WALL_YC, TOP_WALL_XC);
+
+module WallDeco(length) {
+  difference() {
+    prismoid(
+      size1=[
+        COFFIN_HEIGHT - FOOT_SIZE - 2 * WALL_DECO_OFFSET,
+        length - 2 * WALL_DECO_OFFSET,
+      ],
+      size2=[
+        COFFIN_HEIGHT - FOOT_SIZE - 2 * WALL_DECO_OFFSET - 2 * WALL_DECO_HEIGHT,
+        length - 2 * WALL_DECO_OFFSET - 2 * WALL_DECO_HEIGHT,
+      ],
+      h=WALL_DECO_HEIGHT,
+      anchor=BOTTOM + FRONT
+    );
+    back(WALL_DECO_WIDTH + 1)
+      down(1)
+        prismoid(
+          size1=[
+            COFFIN_HEIGHT - FOOT_SIZE - 2 * WALL_DECO_OFFSET - 2 * WALL_DECO_WIDTH - 2,
+            length - 2 * WALL_DECO_OFFSET - 2 * WALL_DECO_WIDTH - 2,
+          ],
+          size2=[
+            COFFIN_HEIGHT - FOOT_SIZE - 2 * WALL_DECO_OFFSET - 2 * WALL_DECO_WIDTH + 2 * WALL_DECO_HEIGHT + 2,
+            length - 2 * WALL_DECO_OFFSET - 2 * WALL_DECO_WIDTH + 2 * WALL_DECO_HEIGHT + 2,
+          ],
+          h=WALL_DECO_HEIGHT + 2,
+          anchor=BOTTOM + FRONT
+        );
+  }
+}
 
 // Coffin
 difference() {
@@ -123,17 +170,48 @@ difference() {
       }
       CoffinShape();
     }
+
+    // Wall Deco
+    move([-COFFIN_BOTTOM_WIDTH / 2, 0, (COFFIN_HEIGHT - FOOT_SIZE) / 2 + FOOT_SIZE])
+      rotate([0, -90, 90 - BOTTOM_WALL_ANGLE])
+        back(WALL_DECO_OFFSET)
+          WallDeco(BOTTOM_WALL_LENGTH);
+
+    move([COFFIN_BOTTOM_WIDTH / 2, 0, (COFFIN_HEIGHT - FOOT_SIZE) / 2 + FOOT_SIZE])
+      rotate([0, 90, -90 + BOTTOM_WALL_ANGLE])
+        back(WALL_DECO_OFFSET)
+          WallDeco(BOTTOM_WALL_LENGTH);
+
+    move([-COFFIN_MIDDLE_WIDTH / 2, COFFIN_MIDDLE_LENGTH, (COFFIN_HEIGHT - FOOT_SIZE) / 2 + FOOT_SIZE])
+      rotate([0, -90, TOP_WALL_ANGLE - 90])
+        back(WALL_DECO_OFFSET)
+          WallDeco(TOP_WALL_LENGTH);
+
+    move([COFFIN_MIDDLE_WIDTH / 2, COFFIN_MIDDLE_LENGTH, (COFFIN_HEIGHT - FOOT_SIZE) / 2 + FOOT_SIZE])
+      rotate([0, 90, 90 - TOP_WALL_ANGLE])
+        back(WALL_DECO_OFFSET)
+          WallDeco(TOP_WALL_LENGTH);
+
+    move([COFFIN_TOP_WIDTH / 2, COFFIN_LENGTH, (COFFIN_HEIGHT - FOOT_SIZE) / 2 + FOOT_SIZE])
+      rotate([0, 90, 90])
+        back(WALL_DECO_OFFSET)
+          WallDeco(COFFIN_TOP_WIDTH);
+
+    move([COFFIN_BOTTOM_WIDTH / 2, 0, (COFFIN_HEIGHT - FOOT_SIZE) / 2 + FOOT_SIZE])
+      rotate([0, -90, 90])
+        back(WALL_DECO_OFFSET)
+          WallDeco(COFFIN_BOTTOM_WIDTH);
   }
   // Minus Magnet Holes
   down(MAGNET_WALL) {
-  move([bx, by, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
-  move([-bx, by, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
-  move([tx, ty, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
-  move([-tx, ty, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+    move([bx, by, COFFIN_HEIGHT])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+    move([-bx, by, COFFIN_HEIGHT])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+    move([tx, ty, COFFIN_HEIGHT])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+    move([-tx, ty, COFFIN_HEIGHT])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
   }
 }
 
@@ -152,157 +230,160 @@ module coffinLidLip() {
 
 // Coffin Lid
 difference() {
-union() {
-up(COFFIN_HEIGHT + 20) {
-  fwd(FOOT_SIZE)
-    CoffinShape(
-      COFFIN_BOTTOM_WIDTH + FOOT_SIZE * 2,
-      COFFIN_MIDDLE_WIDTH + FOOT_SIZE * 2,
-      COFFIN_TOP_WIDTH + FOOT_SIZE * 2,
-      COFFIN_MIDDLE_LENGTH + FOOT_SIZE,
-      COFFIN_LENGTH + FOOT_SIZE * 2,
-      FOOT_SIZE
-    );
-  // Lip
-  difference() {
-    union() {
-      difference() {
-        coffinLidLip();
-        down(LIP_HEIGHT - EPS + 1)
-          back(WALL_THICKNESS + TOLERANCE + LIP_THICKNESS)
-            CoffinShape(
-              COFFIN_BOTTOM_WIDTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
-              COFFIN_MIDDLE_WIDTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
-              COFFIN_TOP_WIDTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
-              COFFIN_MIDDLE_LENGTH - (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
-              COFFIN_LENGTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
-              LIP_HEIGHT + 1
-            );
-      }
-      intersection() {
-        coffinLidLip();
-        up(EPS) union() {
-            move([bx, by, 0])
-              cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
-            move([-bx, by, 0])
-              cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
-            move([tx, ty, 0])
-              cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
-            move([-tx, ty, 0])
-              cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
-          }
-      }
-    }
-
-    up(EPS) {
-      move([bx, by, 0])
-        cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
-      move([-bx, by, 0])
-        cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
-      move([tx, ty, 0])
-        cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
-      move([-tx, ty, 0])
-        cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
-    }
-  }
-  // Lid Top
-  difference() {
-    up(FOOT_SIZE)
-      union() {
-        xrot(-90)
-          prismoid(
-            size1=[COFFIN_BOTTOM_WIDTH, LID_TOP_HEIGHT],
-            size2=[COFFIN_MIDDLE_WIDTH, LID_TOP_HEIGHT],
-            h=COFFIN_MIDDLE_LENGTH + EPS,
-            anchor=BOTTOM + BACK
-          );
-        back(COFFIN_MIDDLE_LENGTH)
-          xrot(-90)
-            prismoid(
-              size1=[COFFIN_MIDDLE_WIDTH, LID_TOP_HEIGHT],
-              size2=[COFFIN_TOP_WIDTH, LID_TOP_HEIGHT],
-              h=COFFIN_LENGTH - COFFIN_MIDDLE_LENGTH,
-              anchor=BOTTOM + BACK
-            );
-
-        up(LID_TOP_HEIGHT - EPS)
-          polyhedron(
-            points=[
-              [COFFIN_BOTTOM_WIDTH / 2, 0, 0],
-              [COFFIN_MIDDLE_WIDTH / 2, COFFIN_MIDDLE_LENGTH, 0],
-              [COFFIN_TOP_WIDTH / 2, COFFIN_LENGTH, 0],
-
-              [-COFFIN_TOP_WIDTH / 2, COFFIN_LENGTH, 0],
-              [-COFFIN_MIDDLE_WIDTH / 2, COFFIN_MIDDLE_LENGTH, 0],
-              [-COFFIN_BOTTOM_WIDTH / 2, 0, 0],
-
-              [COFFIN_BOTTOM_WIDTH / 2 - LID_TOP_CHAMFER, LID_TOP_CHAMFER, LID_TOP_CHAMFER],
-              [COFFIN_MIDDLE_WIDTH / 2 - LID_TOP_CHAMFER, COFFIN_MIDDLE_LENGTH, LID_TOP_CHAMFER],
-              [COFFIN_TOP_WIDTH / 2 - LID_TOP_CHAMFER, COFFIN_LENGTH - LID_TOP_CHAMFER, LID_TOP_CHAMFER],
-
-              [-COFFIN_TOP_WIDTH / 2 + LID_TOP_CHAMFER, COFFIN_LENGTH - LID_TOP_CHAMFER, LID_TOP_CHAMFER],
-              [-COFFIN_MIDDLE_WIDTH / 2 + LID_TOP_CHAMFER, COFFIN_MIDDLE_LENGTH, LID_TOP_CHAMFER],
-              [-COFFIN_BOTTOM_WIDTH / 2 + LID_TOP_CHAMFER, LID_TOP_CHAMFER, LID_TOP_CHAMFER],
-            ],
-            faces=[
-              [0, 1, 2, 3, 4, 5],
-              [11, 10, 9, 8, 7, 6],
-              [11, 6, 0, 5],
-              [8, 9, 3, 2],
-              [6, 7, 1, 0],
-              [7, 8, 2, 1],
-              [10, 11, 5, 4],
-              [9, 10, 4, 3],
-            ]
-          );
-      }
-    up(FOOT_SIZE + LID_TOP_HEIGHT + LID_TOP_CHAMFER - LID_INSET_DEPTH)
-      back(LID_TOP_CHAMFER + LID_INSET_BORDER)
+  union() {
+    up(COFFIN_HEIGHT + 20) {
+      fwd(FOOT_SIZE)
         CoffinShape(
-          COFFIN_BOTTOM_WIDTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
-          COFFIN_MIDDLE_WIDTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
-          COFFIN_TOP_WIDTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
-          COFFIN_MIDDLE_LENGTH - (LID_TOP_CHAMFER + LID_INSET_BORDER),
-          COFFIN_LENGTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
-          COFFIN_HEIGHT
+          COFFIN_BOTTOM_WIDTH + FOOT_SIZE * 2,
+          COFFIN_MIDDLE_WIDTH + FOOT_SIZE * 2,
+          COFFIN_TOP_WIDTH + FOOT_SIZE * 2,
+          COFFIN_MIDDLE_LENGTH + FOOT_SIZE,
+          COFFIN_LENGTH + FOOT_SIZE * 2,
+          FOOT_SIZE
         );
-  }
-  up(FOOT_SIZE + LID_TOP_HEIGHT + LID_TOP_CHAMFER - LID_INSET_DEPTH - EPS)
-    back(COFFIN_MIDDLE_LENGTH + PENTAGRAM_MIDDLE_OFFSET) {
-      // Pentagram
+      // Lip
       difference() {
-        cylinder(d=PENTAGRAM_DIAMETER, h=PENTAGRAM_HEIGHT);
-        down(1)
-          cylinder(d=PENTAGRAM_DIAMETER - PENTAGRAM_THICKNESS * 2, h=PENTAGRAM_HEIGHT + 2);
-      }
-
-      intersection() {
-        cylinder(d=PENTAGRAM_DIAMETER, h=PENTAGRAM_HEIGHT);
         union() {
-          for (i = [0:1:4]) {
-            rotate(72 * i)
-              back(PENTAGRAM_DIAMETER / 2)
-                rot(18)
-                  cube([PENTAGRAM_THICKNESS, PENTAGRAM_DIAMETER, PENTAGRAM_HEIGHT], anchor=BOTTOM + BACK);
+          difference() {
+            coffinLidLip();
+            // down(LIP_HEIGHT - EPS + 1)
+            //   back(WALL_THICKNESS + TOLERANCE + LIP_THICKNESS)
+            //     CoffinShape(
+            //       COFFIN_BOTTOM_WIDTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
+            //       COFFIN_MIDDLE_WIDTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
+            //       COFFIN_TOP_WIDTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
+            //       COFFIN_MIDDLE_LENGTH - (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
+            //       COFFIN_LENGTH - 2 * (WALL_THICKNESS + TOLERANCE + LIP_THICKNESS),
+            //       LIP_HEIGHT + 1
+            //     );
+          }
+          intersection() {
+            coffinLidLip();
+            up(EPS) union() {
+                move([bx, by, 0])
+                  cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
+                move([-bx, by, 0])
+                  cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
+                move([tx, ty, 0])
+                  cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
+                move([-tx, ty, 0])
+                  cylinder(d=PILLAR_DIAMETER + 2 * (TOLERANCE + LIP_THICKNESS), h=COFFIN_HEIGHT, anchor=TOP);
+              }
           }
         }
+
+        up(EPS) {
+          move([bx, by, 0])
+            cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
+          move([-bx, by, 0])
+            cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
+          move([tx, ty, 0])
+            cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
+          move([-tx, ty, 0])
+            cylinder(d=PILLAR_DIAMETER + (2 * TOLERANCE), h=COFFIN_HEIGHT, anchor=TOP);
+        }
       }
+      // Lid Top
+      difference() {
+        up(FOOT_SIZE)
+          union() {
+            xrot(-90)
+              prismoid(
+                size1=[COFFIN_BOTTOM_WIDTH, LID_TOP_HEIGHT],
+                size2=[COFFIN_MIDDLE_WIDTH, LID_TOP_HEIGHT],
+                h=COFFIN_MIDDLE_LENGTH + EPS,
+                anchor=BOTTOM + BACK
+              );
+            back(COFFIN_MIDDLE_LENGTH)
+              xrot(-90)
+                prismoid(
+                  size1=[COFFIN_MIDDLE_WIDTH, LID_TOP_HEIGHT],
+                  size2=[COFFIN_TOP_WIDTH, LID_TOP_HEIGHT],
+                  h=COFFIN_LENGTH - COFFIN_MIDDLE_LENGTH,
+                  anchor=BOTTOM + BACK
+                );
 
-        // up(30)
-        //   text3d("6", size=10, h=2, font="Herculanum");
+            up(LID_TOP_HEIGHT - EPS)
+              polyhedron(
+                points=[
+                  [COFFIN_BOTTOM_WIDTH / 2, 0, 0],
+                  [COFFIN_MIDDLE_WIDTH / 2, COFFIN_MIDDLE_LENGTH, 0],
+                  [COFFIN_TOP_WIDTH / 2, COFFIN_LENGTH, 0],
+
+                  [-COFFIN_TOP_WIDTH / 2, COFFIN_LENGTH, 0],
+                  [-COFFIN_MIDDLE_WIDTH / 2, COFFIN_MIDDLE_LENGTH, 0],
+                  [-COFFIN_BOTTOM_WIDTH / 2, 0, 0],
+
+                  [COFFIN_BOTTOM_WIDTH / 2 - LID_TOP_CHAMFER, LID_TOP_CHAMFER, LID_TOP_CHAMFER],
+                  [COFFIN_MIDDLE_WIDTH / 2 - LID_TOP_CHAMFER, COFFIN_MIDDLE_LENGTH, LID_TOP_CHAMFER],
+                  [COFFIN_TOP_WIDTH / 2 - LID_TOP_CHAMFER, COFFIN_LENGTH - LID_TOP_CHAMFER, LID_TOP_CHAMFER],
+
+                  [-COFFIN_TOP_WIDTH / 2 + LID_TOP_CHAMFER, COFFIN_LENGTH - LID_TOP_CHAMFER, LID_TOP_CHAMFER],
+                  [-COFFIN_MIDDLE_WIDTH / 2 + LID_TOP_CHAMFER, COFFIN_MIDDLE_LENGTH, LID_TOP_CHAMFER],
+                  [-COFFIN_BOTTOM_WIDTH / 2 + LID_TOP_CHAMFER, LID_TOP_CHAMFER, LID_TOP_CHAMFER],
+                ],
+                faces=[
+                  [0, 1, 2, 3, 4, 5],
+                  [11, 10, 9, 8, 7, 6],
+                  [11, 6, 0, 5],
+                  [8, 9, 3, 2],
+                  [6, 7, 1, 0],
+                  [7, 8, 2, 1],
+                  [10, 11, 5, 4],
+                  [9, 10, 4, 3],
+                ]
+              );
+          }
+        up(FOOT_SIZE + LID_TOP_HEIGHT + LID_TOP_CHAMFER - LID_INSET_DEPTH)
+          back(LID_TOP_CHAMFER + LID_INSET_BORDER)
+            CoffinShape(
+              COFFIN_BOTTOM_WIDTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
+              COFFIN_MIDDLE_WIDTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
+              COFFIN_TOP_WIDTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
+              COFFIN_MIDDLE_LENGTH - (LID_TOP_CHAMFER + LID_INSET_BORDER),
+              COFFIN_LENGTH - (LID_TOP_CHAMFER + LID_INSET_BORDER) * 2,
+              COFFIN_HEIGHT
+            );
+      }
+      up(FOOT_SIZE + LID_TOP_HEIGHT + LID_TOP_CHAMFER - LID_INSET_DEPTH - EPS)
+        back(COFFIN_MIDDLE_LENGTH + PENTAGRAM_MIDDLE_OFFSET) {
+          // Pentagram
+          difference() {
+            cylinder(d=PENTAGRAM_DIAMETER, h=PENTAGRAM_HEIGHT);
+            down(1)
+              cylinder(d=PENTAGRAM_DIAMETER - PENTAGRAM_THICKNESS * 2, h=PENTAGRAM_HEIGHT + 2);
+          }
+
+          intersection() {
+            cylinder(d=PENTAGRAM_DIAMETER, h=PENTAGRAM_HEIGHT);
+            union() {
+              for (i = [0:1:4]) {
+                rotate(72 * i)
+                  back(PENTAGRAM_DIAMETER / 2)
+                    rot(18)
+                      cube([PENTAGRAM_THICKNESS, PENTAGRAM_DIAMETER, PENTAGRAM_HEIGHT], anchor=BOTTOM + BACK);
+              }
+            }
+          }
+
+          // for (i = [0:1:4]) {
+          //   rotate(120 * i)
+          //     back(2)
+          //       text3d("6", size=6, h=PENTAGRAM_HEIGHT, font="Herculanum", anchor=BOTTOM + FRONT);
+          // }
+        }
     }
-}
-}
-// Minus magnet holes
+  }
+  // Minus magnet holes
 
-up(COFFIN_HEIGHT + 20 + MAGNET_HEIGHT + MAGNET_WALL) {
-  move([bx, by, 0])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
-  move([-bx, by, 0])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
-  move([tx, ty, 0])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
-  move([-tx, ty, 0])
-    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+  up(COFFIN_HEIGHT + 20 + MAGNET_HEIGHT + MAGNET_WALL) {
+    move([bx, by, 0])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+    move([-bx, by, 0])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+    move([tx, ty, 0])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+    move([-tx, ty, 0])
+      cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
   }
 }
