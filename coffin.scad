@@ -7,19 +7,21 @@ EPS = 0.01;
 
 TOLERANCE = 0.3;
 
-COFFIN_BOTTOM_WIDTH = 40;
-COFFIN_MIDDLE_WIDTH = 60;
-COFFIN_TOP_WIDTH = 40;
+COFFIN_BOTTOM_WIDTH = 35;
+COFFIN_MIDDLE_WIDTH = 55;
+COFFIN_TOP_WIDTH = 35;
 
-COFFIN_MIDDLE_LENGTH = 90;
-COFFIN_LENGTH = 130;
+COFFIN_MIDDLE_LENGTH = 86;
+COFFIN_LENGTH = 120;
 
-COFFIN_HEIGHT = 30;
+COFFIN_HEIGHT = 35;
 
 WALL_THICKNESS = 3;
 
 MAGNET_DIAMETER = 5.8;
-MAGNET_HEIGHT = 2.6;
+MAGNET_HEIGHT = 2.55;
+
+MAGNET_WALL = 0.6;
 
 LIP_HEIGHT = 3;
 LIP_THICKNESS = 1.5;
@@ -123,14 +125,16 @@ difference() {
     }
   }
   // Minus Magnet Holes
+  down(MAGNET_WALL) {
   move([bx, by, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=2 * MAGNET_HEIGHT, anchor=[0, 0, 0]);
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
   move([-bx, by, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=2 * MAGNET_HEIGHT, anchor=[0, 0, 0]);
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
   move([tx, ty, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=2 * MAGNET_HEIGHT, anchor=[0, 0, 0]);
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
   move([-tx, ty, COFFIN_HEIGHT])
-    cylinder(d=MAGNET_DIAMETER, h=2 * MAGNET_HEIGHT, anchor=[0, 0, 0]);
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+  }
 }
 
 module coffinLidLip() {
@@ -147,6 +151,8 @@ module coffinLidLip() {
 }
 
 // Coffin Lid
+difference() {
+union() {
 up(COFFIN_HEIGHT + 20) {
   fwd(FOOT_SIZE)
     CoffinShape(
@@ -285,4 +291,18 @@ up(COFFIN_HEIGHT + 20) {
         // up(30)
         //   text3d("6", size=10, h=2, font="Herculanum");
     }
+}
+}
+// Minus magnet holes
+
+up(COFFIN_HEIGHT + 20 + MAGNET_HEIGHT + MAGNET_WALL) {
+  move([bx, by, 0])
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+  move([-bx, by, 0])
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+  move([tx, ty, 0])
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+  move([-tx, ty, 0])
+    cylinder(d=MAGNET_DIAMETER, h=MAGNET_HEIGHT, anchor=TOP);
+  }
 }
